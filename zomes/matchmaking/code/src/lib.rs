@@ -151,4 +151,19 @@ mod my_zome {
         Ok(proposal_address)
     }
 
+    #[zome_fn("hc_public")]
+    fn get_proposals() -> ZomeApiResult<Vec<GameProposal>> {
+        // define the anchor entry again and compute its hash
+        let anchor_address = Entry::App(
+            "anchor".into(),
+            "game_proposals".into()
+        ).address();
+        
+        hdk::utils::get_links_and_load_type(
+            &anchor_address, 
+            LinkMatch::Exactly("has_proposal"), // the link type to match,
+            LinkMatch::Any,
+        )
+    }
+
 }
