@@ -12,10 +12,13 @@ extern crate holochain_json_derive;
 use hdk::{
     entry_definition::ValidatingEntryType,
     error::ZomeApiResult,
+    AGENT_ADDRESS,
 };
 use hdk::holochain_core_types::{
     entry::Entry,
     dna::entry_types::Sharing,
+    validation::EntryValidationData,
+    link::LinkMatch,
 };
 
 use hdk::holochain_json_api::{
@@ -44,8 +47,13 @@ pub struct GameProposal {
 #[zome]
 mod my_zome {
 
-    #[genesis]
-    fn genesis() {
+    #[init]
+    pub fn init() {
+        Ok(())
+    }
+
+    #[validate_agent]
+    pub fn validate_agent(validation_data: EntryValidationData<AgentId>) {
         Ok(())
     }
 
@@ -58,8 +66,8 @@ mod my_zome {
             validation_package: || {
                 hdk::ValidationPackageDefinition::Entry
             },
-            validation: | _validation_data: hdk::EntryValidationData<MyEntry>| {
-                match validation_data {
+            validation: | _validation_data: hdk::EntryValidationData<GameProposal>| {
+                match _validation_data {
                     // only match if the entry is being created (not modified or deleted)
                     EntryValidationData::Create{ entry, validation_data } => {
                         let game_proposal = GameProposal::from(entry);
@@ -69,7 +77,7 @@ mod my_zome {
                             Err("Cannot author a proposal from another agent".into())
                         }
                     },
-                    EntryValidationData::Delete{ old_entry, old_entry_header, validation_data } => {
+                    EntryValidationData::Delete{ old_entry, validation_data, .. } => {
                         // should update to only the author can delete
                         let game_proposal = GameProposal::from(old_entry);
                         if validation_data.sources().contains(&game_proposal.agent) {
@@ -87,7 +95,7 @@ mod my_zome {
     }
 
     #[entry_def]
-    pub anchor_def() -> ValidatingEntryType {
+    fn anchor_def() -> ValidatingEntryType {
         entry!(
             name: "anchor",
             description: "Central known location to link from",
@@ -154,10 +162,12 @@ mod my_zome {
     #[zome_fn("hc_public")]
     fn get_proposals() -> ZomeApiResult<Vec<GameProposal>> {
         // define the anchor entry again and compute its hash
-        let anchor_address = Entry::App(
+        let anchor_entry = Entry::App(
             "anchor".into(),
             "game_proposals".into()
-        ).address();
+        );
+
+        let anchor_address = hdk::entry_address(&anchor_entry)?;
         
         hdk::utils::get_links_and_load_type(
             &anchor_address, 
