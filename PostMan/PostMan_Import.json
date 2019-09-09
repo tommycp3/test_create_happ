@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"name": "handle_create_proposal",
+			"name": "create_proposal",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -18,7 +18,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"jsonrpc\": \"2.0\",\n    \"id\": 0,\n    \"method\": \"call\",\n    \"params\": {\n        \"instance_id\": \"test-instance\",\n        \"zome\": \"matchmaking\",\n        \"function\": \"handle_create_proposal\",\n        \"args\": {\n        \t\"message\": \"cool\",\n        \t\"timestamp\": 56947509\n        }\n    }\n}"
+					"raw": "{\n    \"jsonrpc\": \"2.0\",\n    \"id\": 0,\n    \"method\": \"call\",\n    \"params\": {\n        \"instance_id\": \"test-instance\",\n        \"zome\": \"matchmaking\",\n        \"function\": \"create_proposal\",\n        \"args\": {\n        \t\"message\": \"cool\",\n        \t\"timestamp\": 56947509\n        }\n    }\n}"
 				},
 				"url": {
 					"raw": "localhost:8888?Content-Type=application/json",

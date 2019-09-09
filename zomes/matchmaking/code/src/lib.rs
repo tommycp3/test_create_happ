@@ -77,17 +77,8 @@ mod my_zome {
                             Err("Cannot author a proposal from another agent".into())
                         }
                     },
-                    EntryValidationData::Delete{ old_entry, validation_data, .. } => {
-                        // should update to only the author can delete
-                        let game_proposal = GameProposal::from(old_entry);
-                        if validation_data.sources().contains(&game_proposal.agent) {
-                            Ok(())
-                        } else {
-                            Err("Cannot delete a proposal from another agent".into())
-                        }
-                    },
                     _ => {
-                        Err("Cannot modify, only create and delete".into())
+                        Err("Cannot modify or delete, only create".into())
                     }
                 }
             }
@@ -102,7 +93,6 @@ mod my_zome {
             sharing: Sharing::Public, 
             validation_package: || { hdk::ValidationPackageDefinition::Entry },
             validation: | _validation_data: hdk::EntryValidationData<String>| {
-                // TODO: check if the anchor is "game_proposals"
                 Ok(())
             },
             links: [
@@ -113,7 +103,6 @@ mod my_zome {
                         hdk::ValidationPackageDefinition::Entry
                     },
                     validation: | _validation_data: hdk::LinkValidationData| {
-                        // TODO: check if the anchor is "game_proposals"
                         Ok(())
                     }
                 )
@@ -122,7 +111,7 @@ mod my_zome {
     }
 
     #[zome_fn("hc_public")]
-    pub fn handle_create_proposal(message: String, timestamp: u32) -> ZomeApiResult<Address> {
+    pub fn create_proposal(message: String, timestamp: u32) -> ZomeApiResult<Address> {
         // create the data as a struct
         let game_proposal_data = GameProposal { 
             agent: AGENT_ADDRESS.to_string().into(),
